@@ -1,6 +1,6 @@
 <?php
 /**
- * @copyright	Copyright (C) 2005 - 2012 Open Source Matters, Inc. All rights reserved.
+ * @copyright	Copyright (C) 2005 - 2013 Open Source Matters, Inc. All rights reserved.
  * @license		GNU General Public License version 2 or later; see LICENSE.txt
  */
 
@@ -121,22 +121,22 @@ class ContentModelArticles extends JModelList
 	protected function getStoreId($id = '')
 	{
 		// Compile the store id.
-		$id .= ':'.$this->getState('filter.published');
-		$id .= ':'.$this->getState('filter.access');
-		$id .= ':'.$this->getState('filter.featured');
-		$id .= ':'.$this->getState('filter.article_id');
-		$id .= ':'.$this->getState('filter.article_id.include');
-		$id .= ':'.$this->getState('filter.category_id');
-		$id .= ':'.$this->getState('filter.category_id.include');
-		$id .= ':'.$this->getState('filter.author_id');
-		$id .= ':'.$this->getState('filter.author_id.include');
-		$id .= ':'.$this->getState('filter.author_alias');
-		$id .= ':'.$this->getState('filter.author_alias.include');
-		$id .= ':'.$this->getState('filter.date_filtering');
-		$id .= ':'.$this->getState('filter.date_field');
-		$id .= ':'.$this->getState('filter.start_date_range');
-		$id .= ':'.$this->getState('filter.end_date_range');
-		$id .= ':'.$this->getState('filter.relative_date');
+		$id .= ':' . serialize($this->getState('filter.published'));
+		$id .= ':' . $this->getState('filter.access');
+		$id .= ':' . $this->getState('filter.featured');
+		$id .= ':' . $this->getState('filter.article_id');
+		$id .= ':' . $this->getState('filter.article_id.include');
+		$id	.= ':' . serialize($this->getState('filter.category_id'));
+		$id .= ':' . $this->getState('filter.category_id.include');
+		$id	.= ':' . serialize($this->getState('filter.author_id'));
+		$id .= ':' . $this->getState('filter.author_id.include');
+		$id	.= ':' . serialize($this->getState('filter.author_alias'));
+		$id .= ':' . $this->getState('filter.author_alias.include');
+		$id .= ':' . $this->getState('filter.date_filtering');
+		$id .= ':' . $this->getState('filter.date_field');
+		$id .= ':' . $this->getState('filter.start_date_range');
+		$id .= ':' . $this->getState('filter.end_date_range');
+		$id .= ':' . $this->getState('filter.relative_date');
 
 		return parent::getStoreId($id);
 	}
@@ -201,14 +201,20 @@ class ContentModelArticles extends JModelList
 		$query->join('LEFT', '#__users AS ua ON ua.id = a.created_by');
 		$query->join('LEFT', '#__users AS uam ON uam.id = a.modified_by');
 
-		// Join on contact table
+		// Get contact id
 		$subQuery = $db->getQuery(true);
-		$subQuery->select('contact.user_id, MAX(contact.id) AS id, contact.language');
+		$subQuery->select('MAX(contact.id) AS id');
 		$subQuery->from('#__contact_details AS contact');
 		$subQuery->where('contact.published = 1');
-		$subQuery->group('contact.user_id, contact.language');
-		$query->select('contact.id as contactid' );
-		$query->join('LEFT', '(' . $subQuery . ') AS contact ON contact.user_id = a.created_by');
+		$subQuery->where('contact.user_id = a.created_by');
+
+		// Filter by language
+		if ($this->getState('filter.language'))
+		{
+			$subQuery->where('(contact.language in (' . $db->quote(JFactory::getLanguage()->getTag()) . ',' . $db->quote('*') . ') OR contact.language IS NULL)');
+		}
+
+		$query->select('(' . $subQuery . ') as contactid');
 
 		// Join over the categories to get parent category titles
 		$query->select('parent.title as parent_title, parent.id as parent_id, parent.path as parent_route, parent.alias as parent_alias');
@@ -454,12 +460,11 @@ class ContentModelArticles extends JModelList
 		// Filter by language
 		if ($this->getState('filter.language')) {
 			$query->where('a.language in ('.$db->quote(JFactory::getLanguage()->getTag()).','.$db->quote('*').')');
-			$query->where('(contact.language in ('.$db->quote(JFactory::getLanguage()->getTag()).','.$db->quote('*').') OR contact.language IS NULL)');
 		}
 
 		// Add the list ordering clause.
 		$query->order($this->getState('list.ordering', 'a.ordering').' '.$this->getState('list.direction', 'ASC'));
-		$query->group('a.id, a.title, a.alias, a.title_alias, a.introtext, a.checked_out, a.checked_out_time, a.catid, a.created, a.created_by, a.created_by_alias, a.created, a.modified, a.modified_by, uam.name, a.publish_up, a.attribs, a.metadata, a.metakey, a.metadesc, a.access, a.hits, a.xreference, a.featured, a.fulltext, a.state, a.publish_down, badcats.id, c.title, c.path, c.access, c.alias, uam.id, ua.name, ua.email, contact.id, parent.title, parent.id, parent.path, parent.alias, v.rating_sum, v.rating_count, c.published, c.lft, a.ordering, parent.lft, fp.ordering, c.id, a.images, a.urls');
+
 		return $query;
 	}
 

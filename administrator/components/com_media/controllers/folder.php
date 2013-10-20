@@ -1,6 +1,6 @@
 <?php
 /**
- * @copyright	Copyright (C) 2005 - 2012 Open Source Matters, Inc. All rights reserved.
+ * @copyright	Copyright (C) 2005 - 2013 Open Source Matters, Inc. All rights reserved.
  * @license		GNU General Public License version 2 or later; see LICENSE.txt
  */
 
@@ -17,7 +17,7 @@ jimport('joomla.filesystem.folder');
  * @subpackage	com_media
  * @since 1.5
  */
-class MediaControllerFolder extends JController
+class MediaControllerFolder extends JControllerLegacy
 {
 
 	/**
@@ -75,7 +75,7 @@ class MediaControllerFolder extends JController
 					continue;
 				}
 
-				$fullPath = JPath::clean(implode(DS, array(COM_MEDIA_BASE, $folder, $path)));
+				$fullPath = JPath::clean(implode(DIRECTORY_SEPARATOR, array(COM_MEDIA_BASE, $folder, $path)));
 				$object_file = new JObject(array('filepath' => $fullPath));
 				if (is_file($fullPath))
 				{

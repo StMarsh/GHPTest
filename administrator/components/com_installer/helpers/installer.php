@@ -2,7 +2,7 @@
 /**
  * @package		Joomla.Administrator
  * @subpackage	com_installer
- * @copyright	Copyright (C) 2005 - 2012 Open Source Matters, Inc. All rights reserved.
+ * @copyright	Copyright (C) 2005 - 2013 Open Source Matters, Inc. All rights reserved.
  * @license		GNU General Public License version 2 or later; see LICENSE.txt
  */
 
@@ -54,6 +54,11 @@ class InstallerHelper
 		JText::_('COM_INSTALLER_SUBMENU_WARNINGS'),
 					'index.php?option=com_installer&view=warnings',
 		$vName == 'warnings'
+		);
+		JSubMenuHelper::addEntry(
+			JText::_('COM_INSTALLER_SUBMENU_LANGUAGES'),
+			'index.php?option=com_installer&view=languages',
+			$vName == 'languages'
 		);
 	}
 
