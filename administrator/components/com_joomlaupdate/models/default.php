@@ -2,14 +2,11 @@
 /**
  * @package     Joomla.Administrator
  * @subpackage  com_joomlaupdate
- * @copyright   Copyright (C) 2005 - 2012 Open Source Matters, Inc. All rights reserved.
+ * @copyright   Copyright (C) 2005 - 2013 Open Source Matters, Inc. All rights reserved.
  * @license     GNU General Public License version 2 or later; see LICENSE.txt
  */
 
-// No direct access.
 defined('_JEXEC') or die;
-
-jimport('joomla.application.component.model');
 
 /**
  * Joomla! update overview Model
@@ -19,7 +16,7 @@ jimport('joomla.application.component.model');
  * @author      nikosdion <nicholas@dionysopoulos.me>
  * @since       2.5.4
  */
-class JoomlaupdateModelDefault extends JModel
+class JoomlaupdateModelDefault extends JModelLegacy
 {
 	/**
 	 * Detects if the Joomla! update site currently in use matches the one

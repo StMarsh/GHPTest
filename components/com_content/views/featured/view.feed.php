@@ -1,6 +1,6 @@
 <?php
 /**
- * @copyright	Copyright (C) 2005 - 2012 Open Source Matters, Inc. All rights reserved.
+ * @copyright	Copyright (C) 2005 - 2013 Open Source Matters, Inc. All rights reserved.
  * @license		GNU General Public License version 2 or later; see LICENSE.txt
  */
 
@@ -21,7 +21,7 @@ class ContentViewFeatured extends JViewLegacy
 		$app 		= JFactory::getApplication();
 		$doc		= JFactory::getDocument();
 		$params		= $app->getParams();
-		$feedEmail	= (@$app->getCfg('feed_email')) ? $app->getCfg('feed_email') : 'author';
+		$feedEmail	= $app->getCfg('feed_email', 'author');
 		$siteEmail	= $app->getCfg('mailfrom');
 
 		$doc->link	= JRoute::_('index.php?option=com_content&view=featured');
@@ -47,7 +47,7 @@ class ContentViewFeatured extends JViewLegacy
 			$query = 'SELECT' .$db->quoteName('fulltext'). 'FROM #__content WHERE id ='.$row->id;
 			$db->setQuery($query);
 			$row->fulltext = $db->loadResult();
-			
+
 			$description	= ($params->get('feed_summary', 0) ? $row->introtext.$row->fulltext : $row->introtext);
 			$author			= $row->created_by_alias ? $row->created_by_alias : $row->author;
 
@@ -55,7 +55,7 @@ class ContentViewFeatured extends JViewLegacy
 			$item				= new JFeedItem();
 			$item->title		= $title;
 			$item->link			= $link;
-			$item->date			= $row->created;
+			$item->date			= $row->publish_up;
 			$item_category		= $categories->get($row->catid);
 			$item->category		= array();
 			$item->category[]	= JText::_('JFEATURED'); // All featured articles are categorized as "Featured"
@@ -65,13 +65,21 @@ class ContentViewFeatured extends JViewLegacy
 				}
 			}
 
-			$item->author 		= $author;
-			$item->authorEmail	= (($feedEmail == 'site') ? $siteEmail : $row->author_email);
+
+			$item->author = $author;
+			if ($feedEmail == 'site')
+			{
+				$item->authorEmail = $siteEmail;
+			}
+			elseif ($feedEmail === 'author')
+			{
+				$item->authorEmail = $row->author_email;
+			}
 
 			// Add readmore link to description if introtext is shown, show_readmore is true and fulltext exists
 			if (!$params->get('feed_summary', 0) && $params->get('feed_show_readmore', 0) && $row->fulltext)
-			{ 
-				$description .= '<p class="feed-readmore"><a target="_blank" href ="'.rtrim(JURI::base(), "/").str_replace(' ', '%20', $item->link).'">'.JText::_('COM_CONTENT_FEED_READMORE').'</a></p>';
+			{
+				$description .= '<p class="feed-readmore"><a target="_blank" href ="' . $item->link . '">'.JText::_('COM_CONTENT_FEED_READMORE').'</a></p>';
 			}
 
 			// Load item description and add div

@@ -2,7 +2,7 @@
 /**
 bv * @package		Joomla.Site
  * @subpackage	com_contact
- * @copyright	Copyright (C) 2005 - 2012 Open Source Matters, Inc. All rights reserved.
+ * @copyright	Copyright (C) 2005 - 2013 Open Source Matters, Inc. All rights reserved.
  * @license		GNU General Public License version 2 or later; see LICENSE.txt
  */
 
@@ -144,6 +144,13 @@ class ContactModelCategory extends JModelList
 			$query->where('a.catid = '.(int) $categoryId);
 			$query->where('c.access IN ('.$groups.')');
 		}
+
+		// Join over the users for the author and modified_by names.
+		$query->select("CASE WHEN a.created_by_alias > ' ' THEN a.created_by_alias ELSE ua.name END AS author");
+		$query->select("ua.email AS author_email");
+
+		$query->join('LEFT', '#__users AS ua ON ua.id = a.created_by');
+		$query->join('LEFT', '#__users AS uam ON uam.id = a.modified_by');
 
 		// Filter by state
 		$state = $this->getState('filter.published');
